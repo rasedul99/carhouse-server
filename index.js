@@ -7,6 +7,8 @@ const port = process.env.PORT || 5000;
 const ObjectId = require("mongodb").ObjectId;
 const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -137,7 +139,7 @@ const run = async () => {
 run();
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Running carHouse server");
 });
 
 app.listen(port, () => {
