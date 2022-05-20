@@ -7,27 +7,25 @@ const port = process.env.PORT || 5000;
 const ObjectId = require("mongodb").ObjectId;
 const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
-
 app.use(cors());
 app.use(express.json());
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
-  // console.log("inside", authHeader);
   if (!authHeader) {
     return res
       .status(401)
       .send({ status: 401, message: "unauthorized access" });
   }
   const token = authHeader.split(" ")[1];
-  // console.log(token);
+
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       return res
         .status(403)
         .send({ status: 403, message: "forbidden  access" });
     }
-    // console.log(decoded);
+
     req.decoded = decoded;
     next();
   });
@@ -50,7 +48,7 @@ const run = async () => {
       const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1d",
       });
-      // console.log(accessToken);
+
       res.send({ accessToken });
     });
     // services api
