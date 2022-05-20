@@ -13,19 +13,20 @@ app.use(express.json());
 
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
+  // console.log("inside", authHeader);
   if (!authHeader) {
-    return res.send(401).send({ message: "unauthorized access" });
+    return res.status(401).send({ message: "unauthorized access" });
   }
   const token = authHeader.split(" ")[1];
+  // console.log(token);
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       return res.status(403).send({ message: "forbidden  access" });
-      console.log(decoded);
-      req.decoded = decoded;
     }
+    // console.log(decoded);
+    req.decoded = decoded;
+    next();
   });
-
-  next();
 }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.tqsec.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -45,9 +46,10 @@ const run = async () => {
       const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1d",
       });
+      // console.log(accessToken);
       res.send({ accessToken });
     });
-
+    // services api
     app.post("/carHouse", async (req, res) => {
       const cars = req.body;
       if (!cars.productname | !cars.image | !cars.price) {
@@ -69,24 +71,26 @@ const run = async () => {
       }
       res.send({ success: true, data: cars });
     });
+    app.get("/carhouse/mycar", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+
+      const email = req.query.email;
+      if (email === decodedEmail) {
+        const query = { email: email };
+        const cursor = carsCollection.find(query);
+        const mycar = await cursor.toArray();
+        res.send({ success: true, mycar });
+      } else {
+        res.status(403).send({ message: "forbidden access" });
+      }
+    });
     app.get("/carhouse/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await carsCollection.findOne(query);
       res.send({ success: true, result: result });
     });
-    app.get("/carhouse/mycar", verifyJWT, async (req, res) => {
-      const decodedEmail = req.decoded.email;
-      const email = req.query.email;
-      if (email === decodedEmail) {
-        const query = { email: email };
-        const cursor = carsCollection.find(query);
-        const mycar = await cursor.toArray();
-        res.send(mycar);
-      } else {
-        res.status(403).send({ message: "forbidden access" });
-      }
-    });
+
     app.put("/carupdate/:id", async (req, res) => {
       const id = req.params.id;
       console.log(id);
