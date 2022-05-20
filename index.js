@@ -15,13 +15,17 @@ function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   // console.log("inside", authHeader);
   if (!authHeader) {
-    return res.status(401).send({ message: "unauthorized access" });
+    return res
+      .status(401)
+      .send({ status: 401, message: "unauthorized access" });
   }
   const token = authHeader.split(" ")[1];
   // console.log(token);
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      return res.status(403).send({ message: "forbidden  access" });
+      return res
+        .status(403)
+        .send({ status: 403, message: "forbidden  access" });
     }
     // console.log(decoded);
     req.decoded = decoded;
